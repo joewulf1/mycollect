@@ -35,7 +35,7 @@ dependencies:
 
   path:
   #this is the stream feed library from https://pub.dev/packages/stream_feed/install
-  stream_feed: ^0.4.0
+  stream_feed: ^0.6.0+2
   english_words: ^4.0.0
 
 
@@ -44,12 +44,12 @@ dependencies:
   cupertino_icons: ^1.0.2
   provider: ^6.0.1
 
-  firebase_core: ^1.24.0
-  cloud_firestore: ^3.1.10
-  firebase_auth: ^3.3.9
+  firebase_core: ^2.1.1
+  cloud_firestore: ^4.0.3
+  firebase_auth: ^4.1.0
   flutter_spinkit: ^5.1.0
   syncfusion_flutter_calendar: ^20.1.50
-  firebase_database: ^9.0.12
+  firebase_database: ^10.0.3
   # firebase_auth: ^0.18.0+1
 
 dependencies_overrides:
@@ -67,7 +67,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^1.0.0
+  flutter_lints: ^2.0.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
