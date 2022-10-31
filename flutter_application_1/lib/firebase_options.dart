@@ -21,8 +21,8 @@ class DefaultFirebaseOptions {
     }
     // ignore: missing_enum_constant_in_switch
     switch (defaultTargetPlatform) {
-      // case TargetPlatform.android:
-      //   return android;
+      case TargetPlatform.android:
+        return android;
       case TargetPlatform.iOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for ios - '
@@ -49,11 +49,11 @@ class DefaultFirebaseOptions {
       appId: "1:743253836054:web:b889afc93a97ea33095037",
       measurementId: "G-WKY60H9Z5J");
 
-  // static const FirebaseOptions android = FirebaseOptions(
-  //   apiKey: 'AIzaSyAoiOKwxjjEnQrZewBsbr1Y5vq0fBvij9s',
-  //   appId: '1:743253836054:web:b889afc93a97ea33095037',
-  //   messagingSenderId: '743253836054',
-  //   projectId: 'mycollection-7b35b',
-  //   storageBucket: 'mycollection-7b35b.appspot.com',
-  // );
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyAoiOKwxjjEnQrZewBsbr1Y5vq0fBvij9s',
+    appId: '1:743253836054:web:b889afc93a97ea33095037',
+    messagingSenderId: '743253836054',
+    projectId: 'mycollection-7b35b',
+    storageBucket: 'mycollection-7b35b.appspot.com',
+  );
 }

@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -36,14 +37,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // int _counter = 0;
-
-  // void _incrementCounter() {
-  //   setState(() {
-  //     _counter++;
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,7 +49,6 @@ class _MyHomePageState extends State<MyHomePage> {
               .collection("mycollections")
               .snapshots(),
           builder: (context, snapshot) {
-            print(snapshot.data?.docs.length);
             if (!snapshot.hasData) {
               return loading
                   ? Loading()
@@ -72,11 +64,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       baseCard(context, snapshot.data!.docs[index]));
             }
           }),
-      floatingActionButton: const FloatingActionButton(
-        onPressed: null,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ),
     );
   }
 }
@@ -85,12 +72,40 @@ Widget baseCard(BuildContext context, DocumentSnapshot document) {
   // This is the base of the homepage items //
   return Card(
       child: InkWell(
-          splashColor: Colors.blue.withAlpha(30),
-          child: Container(
-            height: 100,
-            width: double.infinity,
-            child: Center(child: Text("Penis")),
-          )));
+    splashColor: Colors.blue.withAlpha(30),
+    child: Container(
+      height: 100,
+      width: double.infinity,
+      child: Center(child: Text(document.id)),
+    ),
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => collectionPage(choiceID: document.id)),
+      );
+    },
+  ));
+}
+
+Widget collectCard(BuildContext context, DocumentSnapshot document) {
+  // This is the base of the homepage items //
+  return Card(
+      child: InkWell(
+    splashColor: Colors.blue.withAlpha(30),
+    child: Container(
+      height: 100,
+      width: double.infinity,
+      child: Center(child: Text(document["Name"])),
+    ),
+    // onTap: () {
+    //   Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //         builder: (context) => collectionPage(choiceID: document.id)),
+    //   );
+    // },
+  ));
 }
 
 class Loading extends StatelessWidget {
@@ -104,6 +119,43 @@ class Loading extends StatelessWidget {
           size: 50.0,
         ),
       ),
+    );
+  }
+}
+
+class collectionPage extends StatelessWidget {
+  collectionPage({Key? key, required this.choiceID});
+  final String choiceID;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(choiceID),
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection("mycollections")
+              .doc(choiceID)
+              .collection("spefCollect")
+              .snapshots(),
+          builder: (context, snapshot) {
+            print(choiceID);
+            print(snapshot.data?.docs.length);
+            if (!snapshot.hasData) {
+              return loading
+                  ? Loading()
+                  : const Center(
+                      child: Text(
+                      "Loading",
+                    ));
+            } else {
+              return ListView.builder(
+                  itemExtent: 80.0,
+                  itemCount: snapshot.data?.docs.length,
+                  itemBuilder: (context, index) =>
+                      collectCard(context, snapshot.data!.docs[index]));
+            }
+          }),
     );
   }
 }
