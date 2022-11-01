@@ -64,6 +64,16 @@ class _MyHomePageState extends State<MyHomePage> {
                       baseCard(context, snapshot.data!.docs[index]));
             }
           }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => addCollection()),
+          );
+        },
+        tooltip: 'Add Collection',
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
@@ -156,6 +166,119 @@ class collectionPage extends StatelessWidget {
                       collectCard(context, snapshot.data!.docs[index]));
             }
           }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => addItem(
+                      choiceID: choiceID,
+                    )),
+          );
+        },
+        tooltip: 'Add item to collection',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class addCollection extends StatefulWidget {
+  @override
+  State<addCollection> createState() => _addCollectionState();
+}
+
+class _addCollectionState extends State<addCollection> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  TextEditingController collectionName = TextEditingController();
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Add Collection'),
+      content: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: collectionName,
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter some text';
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Name of Collection',
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  if (_formKey.currentState!.validate()) {
+                    FirebaseFirestore.instance
+                        .collection("mycollections")
+                        .doc(collectionName.text)
+                        .set({});
+                  }
+                },
+                child: const Text('Submit'),
+              ),
+            ],
+          )),
+    );
+  }
+}
+
+class addItem extends StatefulWidget {
+  @override
+  addItem({Key? key, required this.choiceID});
+  final String choiceID;
+  State<addItem> createState() => _addItemState(choiceID: choiceID);
+}
+
+class _addItemState extends State<addItem> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  TextEditingController collectionName = TextEditingController();
+  _addItemState({Key? key, required this.choiceID});
+  final String choiceID;
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Add an item to the collection'),
+      content: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: collectionName,
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter some text';
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Item Name',
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  if (_formKey.currentState!.validate()) {
+                    FirebaseFirestore.instance
+                        .collection("mycollections")
+                        .doc(choiceID)
+                        .collection("spefCollect")
+                        .doc()
+                        .set({
+                      "Name": collectionName.text,
+                    });
+                  }
+                },
+                child: const Text('Submit'),
+              ),
+            ],
+          )),
     );
   }
 }
