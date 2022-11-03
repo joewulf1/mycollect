@@ -79,22 +79,38 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 Widget baseCard(BuildContext context, DocumentSnapshot document) {
-  return Card(
-      child: InkWell(
-    splashColor: Colors.blue.withAlpha(30),
-    child: Container(
-      height: 100,
-      width: double.infinity,
-      child: Center(child: Text(document.id)),
-    ),
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => collectionPage(choiceID: document.id)),
-      );
-    },
-  ));
+  return Padding(
+    padding: const EdgeInsets.all(10.0),
+    child: Card(
+        child: InkWell(
+      splashColor: Colors.blue.withAlpha(30),
+      child: Container(
+        height: 100,
+        width: double.infinity,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Center(child: Text(document.id)),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FloatingActionButton.small(
+                  child: const Icon(Icons.delete),
+                  onPressed: () {
+                    delCollection(document.id);
+                  }),
+            ),
+          ],
+        ),
+      ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => collectionPage(choiceID: document.id)),
+        );
+      },
+    )),
+  );
 }
 
 Widget collectCard(
@@ -117,7 +133,7 @@ Widget collectCard(
     Align(
       alignment: Alignment.bottomRight,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(1.0),
         child: FloatingActionButton.small(
             child: const Icon(Icons.delete),
             onPressed: () {
@@ -136,6 +152,11 @@ Future delItem(String docID, String choiceID) {
       .collection("spefCollect")
       .doc(docID)
       .delete();
+}
+
+Future delCollection(String docID) {
+  final fireStoreReference = FirebaseFirestore.instance;
+  return fireStoreReference.collection("mycollections").doc(docID).delete();
 }
 
 class Loading extends StatelessWidget {
