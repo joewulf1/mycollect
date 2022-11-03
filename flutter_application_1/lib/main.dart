@@ -1,4 +1,3 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -80,7 +79,6 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 Widget baseCard(BuildContext context, DocumentSnapshot document) {
-  // This is the base of the homepage items //
   return Card(
       child: InkWell(
     splashColor: Colors.blue.withAlpha(30),
@@ -99,24 +97,45 @@ Widget baseCard(BuildContext context, DocumentSnapshot document) {
   ));
 }
 
-Widget collectCard(BuildContext context, DocumentSnapshot document) {
-  // This is the base of the homepage items //
+Widget collectCard(
+    BuildContext context, DocumentSnapshot document, String choiceID) {
+  String docID = document.id;
   return Card(
-      child: InkWell(
-    splashColor: Colors.blue.withAlpha(30),
-    child: Container(
-      height: 100,
-      width: double.infinity,
-      child: Center(child: Text(document["Name"])),
+      child: ExpansionTile(title: Text(document["Name"]), children: [
+    const Align(
+        alignment: Alignment.centerLeft,
+        child: Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Text("Example Field One"),
+        )),
+    const Align(
+        alignment: Alignment.centerLeft,
+        child: Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Text("Example Field Two"),
+        )),
+    Align(
+      alignment: Alignment.bottomRight,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: FloatingActionButton.small(
+            child: const Icon(Icons.delete),
+            onPressed: () {
+              delItem(docID, choiceID);
+            }),
+      ),
     ),
-    // onTap: () {
-    //   Navigator.push(
-    //     context,
-    //     MaterialPageRoute(
-    //         builder: (context) => collectionPage(choiceID: document.id)),
-    //   );
-    // },
-  ));
+  ]));
+}
+
+Future delItem(String docID, String choiceID) {
+  final fireStoreReference = FirebaseFirestore.instance;
+  return fireStoreReference
+      .collection("mycollections")
+      .doc(choiceID)
+      .collection("spefCollect")
+      .doc(docID)
+      .delete();
 }
 
 class Loading extends StatelessWidget {
@@ -150,8 +169,6 @@ class collectionPage extends StatelessWidget {
               .collection("spefCollect")
               .snapshots(),
           builder: (context, snapshot) {
-            print(choiceID);
-            print(snapshot.data?.docs.length);
             if (!snapshot.hasData) {
               return loading
                   ? Loading()
@@ -161,10 +178,9 @@ class collectionPage extends StatelessWidget {
                     ));
             } else {
               return ListView.builder(
-                  itemExtent: 80.0,
                   itemCount: snapshot.data?.docs.length,
-                  itemBuilder: (context, index) =>
-                      collectCard(context, snapshot.data!.docs[index]));
+                  itemBuilder: (context, index) => collectCard(
+                      context, snapshot.data!.docs[index], choiceID));
             }
           }),
       floatingActionButton: FloatingActionButton(
@@ -194,7 +210,7 @@ class _addCollectionState extends State<addCollection> {
   TextEditingController collectionName = TextEditingController();
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Add Collection'),
+      title: const Text('Add Collection'),
       content: Form(
           key: _formKey,
           child: Column(
@@ -244,7 +260,7 @@ class _addItemState extends State<addItem> {
   final String choiceID;
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Add an item to the collection'),
+      title: const Text('Add an item to the collection'),
       content: Form(
           key: _formKey,
           child: Column(
