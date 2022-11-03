@@ -156,7 +156,10 @@ Future delItem(String docID, String choiceID) {
 
 Future delCollection(String docID) {
   final fireStoreReference = FirebaseFirestore.instance;
-  return fireStoreReference.collection("mycollections").doc(docID).delete();
+  return fireStoreReference.runTransaction((transaction) async =>
+      await transaction
+          .delete(fireStoreReference.collection("mycollections").doc(docID)));
+  ;
 }
 
 class Loading extends StatelessWidget {
