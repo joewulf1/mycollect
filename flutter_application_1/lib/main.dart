@@ -115,33 +115,77 @@ Widget baseCard(BuildContext context, DocumentSnapshot document) {
 
 Widget collectCard(
     BuildContext context, DocumentSnapshot document, String choiceID) {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final double widthScreen = MediaQuery.of(context).size.width;
   String docID = document.id;
-  return Card(
-      child: ExpansionTile(title: Text(document["Name"]), children: [
-    const Align(
-        alignment: Alignment.centerLeft,
-        child: Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text("Example Field One"),
-        )),
-    const Align(
-        alignment: Alignment.centerLeft,
-        child: Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text("Example Field Two"),
-        )),
-    Align(
-      alignment: Alignment.bottomRight,
-      child: Padding(
-        padding: const EdgeInsets.all(1.0),
-        child: FloatingActionButton.small(
-            child: const Icon(Icons.delete),
-            onPressed: () {
-              delItem(docID, choiceID);
-            }),
+
+  return SizedBox(
+    // width: widthScreen * .065,
+    child: Card(
+        child: ExpansionTile(title: Text(document["Name"]), children: [
+      SizedBox(
+        child: /* Something in here is causing it to briefly return null. Joe you must fix this */
+            StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection("mycollections")
+                    .doc(choiceID)
+                    .collection("spefCollect")
+                    .doc(docID)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  return ListView(
+                    shrinkWrap: true,
+                    children: (snapshot.data?.get("Descriptors")
+                            as Map<String, dynamic>)
+                        .entries
+                        .map((MapEntry mapEntry) {
+                      return ListTile(
+                          title: Text(mapEntry.key),
+                          trailing: Text(mapEntry.value.toString()));
+                    }).toList(),
+                  );
+                }),
       ),
-    ),
-  ]));
+      SizedBox(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: FloatingActionButton.small(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => addField(
+                                choiceID: choiceID,
+                                docID: docID,
+                              )),
+                    );
+                  },
+                  tooltip: 'Add item to collection',
+                  child: const Icon(Icons.add),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: FloatingActionButton.small(
+                    child: const Icon(Icons.delete),
+                    onPressed: () {
+                      delItem(docID, choiceID);
+                    }),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ])),
+  );
 }
 
 Future delItem(String docID, String choiceID) {
@@ -182,6 +226,7 @@ class collectionPage extends StatelessWidget {
   final String choiceID;
   @override
   Widget build(BuildContext context) {
+    final double widthScreen = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         title: Text(choiceID),
@@ -313,7 +358,79 @@ class _addItemState extends State<addItem> {
                         .doc()
                         .set({
                       "Name": collectionName.text,
+                      "Descriptors": Map<String, dynamic>(),
                     });
+                  }
+                },
+                child: const Text('Submit'),
+              ),
+            ],
+          )),
+    );
+  }
+}
+
+class addField extends StatefulWidget {
+  @override
+  addField({Key? key, required this.choiceID, required this.docID});
+  final String choiceID;
+  final String docID;
+  State<addField> createState() =>
+      _addFieldState(choiceID: choiceID, docID: docID);
+}
+
+class _addFieldState extends State<addField> {
+  TextEditingController fieldName = TextEditingController();
+  TextEditingController fieldContent = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  _addFieldState({Key? key, required this.choiceID, required this.docID});
+  final String choiceID;
+  final String docID;
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text("Add a field for the item in the collection"),
+      content: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: fieldName,
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter some text';
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Field Name',
+                ),
+              ),
+              TextFormField(
+                controller: fieldContent,
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter some text';
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Field Content',
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  if (_formKey.currentState!.validate()) {
+                    String wCombo = "Descriptors." + fieldName.text;
+                    FirebaseFirestore.instance
+                        .collection("mycollections")
+                        .doc(choiceID)
+                        .collection("spefCollect")
+                        .doc(docID)
+                        .update(
+                      {wCombo: fieldContent.text},
+                      // SetOptions(merge: true),
+                    );
                   }
                 },
                 child: const Text('Submit'),
