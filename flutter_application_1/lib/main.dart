@@ -119,72 +119,79 @@ Widget collectCard(
   final double widthScreen = MediaQuery.of(context).size.width;
   String docID = document.id;
 
-  return SizedBox(
-    // width: widthScreen * .065,
-    child: Card(
-        child: ExpansionTile(title: Text(document["Name"]), children: [
-      SizedBox(
-        child: /* Something in here is causing it to briefly return null. Joe you must fix this */
-            StreamBuilder<DocumentSnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection("mycollections")
-                    .doc(choiceID)
-                    .collection("spefCollect")
-                    .doc(docID)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  return ListView(
-                    shrinkWrap: true,
-                    children: (snapshot.data?.get("Descriptors")
-                            as Map<String, dynamic>)
-                        .entries
-                        .map((MapEntry mapEntry) {
-                      return ListTile(
-                          title: Text(mapEntry.key),
-                          trailing: Text(mapEntry.value.toString()));
-                    }).toList(),
-                  );
-                }),
-      ),
-      SizedBox(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: FloatingActionButton.small(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => addField(
-                                choiceID: choiceID,
-                                docID: docID,
-                              )),
-                    );
-                  },
-                  tooltip: 'Add item to collection',
-                  child: const Icon(Icons.add),
-                ),
+  return Stack(
+    children: [
+      Align(
+        alignment: Alignment.center,
+        child: SizedBox(
+          width: widthScreen * .5,
+          child: Card(
+              child: ExpansionTile(title: Text(document["Name"]), children: [
+            SizedBox(
+              child: /* Something in here is causing it to briefly return null. Joe you must fix this */
+                  StreamBuilder<DocumentSnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection("mycollections")
+                          .doc(choiceID)
+                          .collection("spefCollect")
+                          .doc(docID)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        return ListView(
+                          shrinkWrap: true,
+                          children: (snapshot.data!.get("Descriptors")
+                                  as Map<String, dynamic>)
+                              .entries
+                              .map((MapEntry mapEntry) {
+                            return ListTile(
+                                title: Text(mapEntry.key),
+                                trailing: Text(mapEntry.value.toString()));
+                          }).toList(),
+                        );
+                      }),
+            ),
+            SizedBox(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: FloatingActionButton.small(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => addField(
+                                      choiceID: choiceID,
+                                      docID: docID,
+                                    )),
+                          );
+                        },
+                        tooltip: 'Add item to collection',
+                        child: const Icon(Icons.add),
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: FloatingActionButton.small(
+                          child: const Icon(Icons.delete),
+                          onPressed: () {
+                            delItem(docID, choiceID);
+                          }),
+                    ),
+                  ),
+                ],
               ),
             ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: FloatingActionButton.small(
-                    child: const Icon(Icons.delete),
-                    onPressed: () {
-                      delItem(docID, choiceID);
-                    }),
-              ),
-            ),
-          ],
+          ])),
         ),
       ),
-    ])),
+    ],
   );
 }
 
