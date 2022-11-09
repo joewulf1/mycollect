@@ -43,6 +43,22 @@
 
 </body>
 <script>
+<<<<<<< HEAD
+  window.addEventListener('load', function(ev) {
+    // Download main.dart.js
+    _flutter.loader.loadEntrypoint({
+      serviceWorker: {
+        serviceWorkerVersion: serviceWorkerVersion,
+      },
+      onEntrypointLoaded: function(engineInitializer) {
+        engineInitializer.initializeEngine().then(function(appRunner) {
+          appRunner.runApp();
+        });
+      }
+    });
+  });
+</script>
+=======
   if ('serviceWorker' in navigator) {
     window.addEventListener('flutter-first-frame', function () {
       navigator.serviceWorker.register('flutter_service_worker.js?v=2330050811');
@@ -50,4 +66,5 @@
   }
 </script>
 <script src="main.dart.js" type="application/javascript"></script>
+>>>>>>> parent of 5299063 (Revert "Changed Card Sizes")
 </html>
