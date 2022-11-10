@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 bool loading = false;
+Color themeColor = const Color.fromARGB(255, 83, 114, 78);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
       title: 'MyCollect',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blueGrey,
+        primarySwatch: Colors.green,
       ),
       home: const MyHomePage(title: 'MyCollect Landing Page'),
     );
@@ -50,12 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
               .snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return loading
-                  ? Loading()
-                  : const Center(
-                      child: Text(
-                      "Loading",
-                    ));
+              return Center(child: Loading());
             } else {
               return ListView.builder(
                   itemExtent: 80.0,
@@ -81,11 +77,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
 Widget baseCard(BuildContext context, DocumentSnapshot document) {
   return Padding(
-    padding: const EdgeInsets.all(10.0),
+    padding: const EdgeInsets.all(8.0),
     child: Card(
         child: InkWell(
       splashColor: Colors.blue.withAlpha(30),
-      child: Container(
+      child: SizedBox(
         height: 100,
         width: double.infinity,
         child: Row(
@@ -99,6 +95,7 @@ Widget baseCard(BuildContext context, DocumentSnapshot document) {
                   child: const Icon(Icons.delete),
                   onPressed: () {
                     delCollection(document.id);
+                    delCollectionAdd(document.id);
                   }),
             ),
           ],
@@ -126,36 +123,35 @@ Widget collectCard(
       Align(
         alignment: Alignment.center,
         child: SizedBox(
-          width: widthScreen * .5,
+          width: widthScreen * .75,
           child: Card(
               child: ExpansionTile(title: Text(document["Name"]), children: [
             SizedBox(
-              child: /* Something in here is causing it to briefly return null. Joe you must fix this */
-                  StreamBuilder<DocumentSnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection("mycollections")
-                          .doc(choiceID)
-                          .collection("spefCollect")
-                          .doc(docID)
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const Text("Loading.....");
-                        } else {
-                          return ListView(
-                            shrinkWrap: true,
-                            children: (snapshot.data?.get("Descriptors")
-                                    as Map<String, dynamic>)
-                                .entries
-                                .map((MapEntry mapEntry) {
-                              return ListTile(
-                                  title: Text(mapEntry.key),
-                                  trailing: Text(mapEntry.value.toString()));
-                            }).toList(),
-                          );
-                        }
-                        ;
-                      }),
+              child: StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection("mycollections")
+                      .doc(choiceID)
+                      .collection("spefCollect")
+                      .doc(docID)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Text("Loading.....");
+                    } else {
+                      return ListView(
+                        shrinkWrap: true,
+                        children: (snapshot.data?.get("Descriptors")
+                                as Map<String, dynamic>)
+                            .entries
+                            .map((MapEntry mapEntry) {
+                          return ListTile(
+                              title: Text(mapEntry.key),
+                              trailing: Text(mapEntry.value.toString()));
+                        }).toList(),
+                      );
+                    }
+                    ;
+                  }),
             ),
             SizedBox(
               child: Row(
@@ -166,7 +162,7 @@ Widget collectCard(
                     child: Padding(
                       padding: const EdgeInsets.all(4.0),
                       child: FloatingActionButton.small(
-                        heroTag: "addField",
+                        heroTag: docID,
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -216,10 +212,18 @@ Future delItem(String docID, String choiceID) {
 
 Future delCollection(String docID) {
   final fireStoreReference = FirebaseFirestore.instance;
-  return fireStoreReference.runTransaction((transaction) async =>
-      await transaction
-          .delete(fireStoreReference.collection("mycollections").doc(docID)));
-  ;
+  return fireStoreReference.runTransaction((transaction) async => transaction
+      .delete(fireStoreReference.collection("mycollections").doc(docID)));
+}
+
+Future delCollectionAdd(String choiceID) {
+  final fireStoreReference = FirebaseFirestore.instance;
+  return fireStoreReference
+      .collection("mycollections")
+      .doc(choiceID)
+      .collection("spefCollect")
+      .doc() /* Add code that refrences every document in the collection */
+      .delete();
 }
 
 class Loading extends StatelessWidget {
@@ -269,7 +273,6 @@ class collectionPage extends StatelessWidget {
             }
           }),
       floatingActionButton: FloatingActionButton(
-        heroTag: "addItem",
         onPressed: () {
           Navigator.push(
             context,
@@ -345,6 +348,7 @@ class addItem extends StatefulWidget {
   @override
   addItem({Key? key, required this.choiceID});
   final String choiceID;
+  @override
   State<addItem> createState() => _addItemState(choiceID: choiceID);
 }
 
@@ -437,7 +441,7 @@ class _addFieldState extends State<addField> {
                 onFieldSubmitted: (value) {
                   Navigator.of(context).pop();
                   if (_formKey.currentState!.validate()) {
-                    String wCombo = "Descriptors." + fieldName.text;
+                    String wCombo = "Descriptors.${fieldName.text}";
                     FirebaseFirestore.instance
                         .collection("mycollections")
                         .doc(choiceID)
@@ -464,7 +468,7 @@ class _addFieldState extends State<addField> {
                 onFieldSubmitted: (value) {
                   Navigator.of(context).pop();
                   if (_formKey.currentState!.validate()) {
-                    String wCombo = "Descriptors." + fieldName.text;
+                    String wCombo = "Descriptors.${fieldName.text}";
                     FirebaseFirestore.instance
                         .collection("mycollections")
                         .doc(choiceID)
