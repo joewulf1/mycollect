@@ -65,6 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
             }
           }),
       floatingActionButton: FloatingActionButton(
+        heroTag: "createCollection",
         onPressed: () {
           Navigator.push(
             context,
@@ -94,6 +95,7 @@ Widget baseCard(BuildContext context, DocumentSnapshot document) {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: FloatingActionButton.small(
+                  heroTag: document.id,
                   child: const Icon(Icons.delete),
                   onPressed: () {
                     delCollection(document.id);
@@ -137,17 +139,22 @@ Widget collectCard(
                           .doc(docID)
                           .snapshots(),
                       builder: (context, snapshot) {
-                        return ListView(
-                          shrinkWrap: true,
-                          children: (snapshot.data!.get("Descriptors")
-                                  as Map<String, dynamic>)
-                              .entries
-                              .map((MapEntry mapEntry) {
-                            return ListTile(
-                                title: Text(mapEntry.key),
-                                trailing: Text(mapEntry.value.toString()));
-                          }).toList(),
-                        );
+                        if (!snapshot.hasData) {
+                          return const Text("Loading.....");
+                        } else {
+                          return ListView(
+                            shrinkWrap: true,
+                            children: (snapshot.data?.get("Descriptors")
+                                    as Map<String, dynamic>)
+                                .entries
+                                .map((MapEntry mapEntry) {
+                              return ListTile(
+                                  title: Text(mapEntry.key),
+                                  trailing: Text(mapEntry.value.toString()));
+                            }).toList(),
+                          );
+                        }
+                        ;
                       }),
             ),
             SizedBox(
@@ -159,6 +166,7 @@ Widget collectCard(
                     child: Padding(
                       padding: const EdgeInsets.all(4.0),
                       child: FloatingActionButton.small(
+                        heroTag: "addField",
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -169,7 +177,7 @@ Widget collectCard(
                                     )),
                           );
                         },
-                        tooltip: 'Add item to collection',
+                        tooltip: 'Add field to collection',
                         child: const Icon(Icons.add),
                       ),
                     ),
@@ -179,6 +187,7 @@ Widget collectCard(
                     child: Padding(
                       padding: const EdgeInsets.all(4.0),
                       child: FloatingActionButton.small(
+                          heroTag: "itemDeletion",
                           child: const Icon(Icons.delete),
                           onPressed: () {
                             delItem(docID, choiceID);
@@ -260,6 +269,7 @@ class collectionPage extends StatelessWidget {
             }
           }),
       floatingActionButton: FloatingActionButton(
+        heroTag: "addItem",
         onPressed: () {
           Navigator.push(
             context,
@@ -293,6 +303,15 @@ class _addCollectionState extends State<addCollection> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
+                onFieldSubmitted: (value) {
+                  Navigator.of(context).pop();
+                  if (_formKey.currentState!.validate()) {
+                    FirebaseFirestore.instance
+                        .collection("mycollections")
+                        .doc(collectionName.text)
+                        .set({});
+                  }
+                },
                 controller: collectionName,
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
@@ -343,6 +362,20 @@ class _addItemState extends State<addItem> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
+                onFieldSubmitted: (value) {
+                  Navigator.of(context).pop();
+                  if (_formKey.currentState!.validate()) {
+                    FirebaseFirestore.instance
+                        .collection("mycollections")
+                        .doc(choiceID)
+                        .collection("spefCollect")
+                        .doc()
+                        .set({
+                      "Name": collectionName.text,
+                      "Descriptors": Map<String, dynamic>(),
+                    });
+                  }
+                },
                 controller: collectionName,
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
@@ -401,6 +434,21 @@ class _addFieldState extends State<addField> {
           child: Column(
             children: [
               TextFormField(
+                onFieldSubmitted: (value) {
+                  Navigator.of(context).pop();
+                  if (_formKey.currentState!.validate()) {
+                    String wCombo = "Descriptors." + fieldName.text;
+                    FirebaseFirestore.instance
+                        .collection("mycollections")
+                        .doc(choiceID)
+                        .collection("spefCollect")
+                        .doc(docID)
+                        .update(
+                      {wCombo: fieldContent.text},
+                      // SetOptions(merge: true),
+                    );
+                  }
+                },
                 controller: fieldName,
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
@@ -413,6 +461,21 @@ class _addFieldState extends State<addField> {
                 ),
               ),
               TextFormField(
+                onFieldSubmitted: (value) {
+                  Navigator.of(context).pop();
+                  if (_formKey.currentState!.validate()) {
+                    String wCombo = "Descriptors." + fieldName.text;
+                    FirebaseFirestore.instance
+                        .collection("mycollections")
+                        .doc(choiceID)
+                        .collection("spefCollect")
+                        .doc(docID)
+                        .update(
+                      {wCombo: fieldContent.text},
+                      // SetOptions(merge: true),
+                    );
+                  }
+                },
                 controller: fieldContent,
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
