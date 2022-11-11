@@ -94,8 +94,13 @@ Widget baseCard(BuildContext context, DocumentSnapshot document) {
                   heroTag: document.id,
                   child: const Icon(Icons.delete),
                   onPressed: () {
-                    delCollection(document.id);
-                    delCollectionAdd(document.id);
+                    print("object");
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              youSure(context, document, document.id)),
+                    );
                   }),
             ),
           ],
@@ -224,6 +229,20 @@ Future delCollectionAdd(String choiceID) {
       .collection("spefCollect")
       .doc() /* Add code that refrences every document in the collection */
       .delete();
+}
+
+Widget youSure(
+    BuildContext context, DocumentSnapshot document, String choiceID) {
+  return AlertDialog(
+      title: Text("Are you sure you want to delete $choiceID"),
+      content: ElevatedButton(
+        onPressed: () {
+          delCollection(document.id);
+          delCollectionAdd(document.id);
+          Navigator.of(context).pop();
+        },
+        child: Text("Delete"),
+      ));
 }
 
 class Loading extends StatelessWidget {
